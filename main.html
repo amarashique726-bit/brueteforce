@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>🔐 Password Cracking Live Demo — Responsive Seminar Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ====== Theme & Resets ====== */
+        :root {
+            --bg: #0b0f10;
+            --panel: #0d1416;
+            --card: rgba(0, 20, 0, .82);
+            --text: #e9ffee;
+            --muted: #bfeede;
+            --accent: #00ff99;
+            --accent2: #00ccff;
+            --warn: #ffce3a;
+            --danger: #ff5c7a;
+            --ok: #28e66f;
+            --border: rgba(0, 255, 153, .35);
+            --shadow: 0 0 18px rgba(0, 255, 153, .32);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Share Tech Mono", monospace;
+            overflow-x: hidden
+        }
+
+        a {
+            color: #aaf;
+        }
+
+        #bgA,
+        #bgB {
+            position: fixed;
+            inset: 0;
+            z-index: -3
+        }
+
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+            background: radial-gradient(1100px 800px at 75% -10%, rgba(0, 255, 153, .12), transparent 60%),
+                radial-gradient(900px 700px at 10% 110%, rgba(0, 204, 255, .09), transparent 55%);
+            mix-blend-mode: screen
+        }
+
+        .app {
+            max-width: 1220px;
+            margin: auto;
+            padding: 16px 12px 60px
+        }
+
+        .header {
+            border: 1px solid var(--border);
+            background: linear-gradient(90deg, rgba(0, 255, 153, .07), rgba(0, 204, 255, .07));
+            border-radius: 12px;
+            padding: 18px 14px;
+            margin: 16px 0;
+            box-shadow: var(--shadow)
+        }
+
+        .header h1 {
+            margin: 0 0 6px;
+            font-family: "Orbitron", sans-serif;
+            font-size: clamp(20px, 3.5vw, 34px);
+            letter-spacing: .4px;
+            text-shadow: 0 0 12px rgba(0, 255, 153, .35)
+        }
+
+        .subtitle {
+            margin: 6px 0 10px;
+            color: var(--muted);
+            font-size: clamp(12px, 2vw, 16px)
+        }
+
+        .ethical {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            background: rgba(255, 80, 80, .08);
+            border: 1px solid rgba(255, 80, 80, .35);
+            color: #ffd3d3;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: clamp(12px, 2vw, 14px)
+        }
+
+        /* Panels */
+        .panel {
+            border: 1px solid var(--border);
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: var(--shadow);
+            margin: 14px 0
+        }
+
+        .panel h2 {
+            margin: 0 0 8px;
+            font-family: "Orbitron", sans-serif;
+            font-size: clamp(16px, 2.6vw, 22px)
+        }
+
+        /* Checker */
+        .row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center
+        }
+
+        .input {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        input[type=password],
+        input[type=text],
+        input[type=number] {
+            width: 100%;
+            background: rgba(0, 0, 0, .4);
+            border: 1px solid rgba(0, 255, 153, .35);
+            color: #eafff5;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: clamp(12px, 2.5vw, 16px)
+        }
+
+        .toggle {
+            cursor: pointer;
+            border: 1px dashed rgba(0, 255, 153, .35);
+            padding: 8px 10px;
+            border-radius: 10px;
+            user-select: none
+        }
+
+        .btn {
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            background: transparent;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            letter-spacing: .6px;
+            transition: transform .12s ease, box-shadow .2s ease, background .2s ease;
+            font-family: "Orbitron", sans-serif;
+            font-size: clamp(12px, 2.4vw, 14px)
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 12px rgba(0, 255, 153, .45);
+            background: rgba(0, 255, 153, .08)
+        }
+
+        .btn.secondary {
+            border-color: var(--warn);
+            color: var(--warn)
+        }
+
+        .btn.danger {
+            border-color: var(--danger);
+            color: var(--danger)
+        }
+
+        .btn.ghost {
+            border-color: #9fe5c0;
+            color: #9fe5c0
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .meter {
+            margin-top: 8px
+        }
+
+        .bar {
+            height: 12px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, .07)
+        }
+
+        .fill {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--danger), var(--warn), var(--accent), var(--accent2));
+            box-shadow: 0 0 10px var(--accent)
+        }
+
+        .readout {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            font-size: clamp(11px, 2.2vw, 14px);
+            color: #c6ffee
+        }
+
+        .tips {
+            margin-top: 6px;
+            font-size: clamp(11px, 2.2vw, 13px);
+            color: #bfeede
+        }
+
+        /* Speed & Stats */
+        .grid4 {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px
+        }
+
+        .badge {
+            background: rgba(0, 204, 255, .07);
+            border: 1px solid rgba(0, 204, 255, .35);
+            padding: 10px;
+            border-radius: 10px;
+            min-height: 58px
+        }
+
+        .k {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #b7f6ff;
+            font-size: clamp(11px, 2.2vw, 13px)
+        }
+
+        .v {
+            font-size: clamp(14px, 3vw, 18px);
+            font-weight: 700;
+            color: #eafff5
+        }
+
+        .speedRow {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            align-items: center
+        }
+
+        .speedRow .left {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center
+        }
+
+        .speedRow .right {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-wrap: wrap
+        }
+
+        .speedRow label {
+            white-space: nowrap
+        }
+
+        input[type=range] {
+            width: 180px
+        }
+
+        /* Cards */
+        .section-title {
+            font-family: "Orbitron", sans-serif;
+            margin: 18px 2px 8px;
+            font-size: clamp(16px, 2.6vw, 20px)
+        }
+
+        .cards {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 300px
+        }
+
+        .head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed rgba(255, 255, 255, .15)
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: clamp(14px, 2.6vw, 18px)
+        }
+
+        .status {
+            font-size: clamp(10px, 2vw, 12px);
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, .18)
+        }
+
+        .status.ready {
+            color: #b8f8dd;
+            border-color: rgba(0, 255, 153, .35)
+        }
+
+        .status.running {
+            color: #001b0f;
+            background: linear-gradient(90deg, #00ff99, #00ccff);
+            border: 0
+        }
+
+        .status.paused {
+            color: #2a2010;
+            background: linear-gradient(90deg, #ffd057, #ffb03a)
+        }
+
+        .status.stopped {
+            color: #300014;
+            background: linear-gradient(90deg, #ff5c7a, #ff8aa0)
+        }
+
+        .body {
+            display: grid;
+            gap: 8px;
+            margin-top: 8px
+        }
+
+        .p {
+            font-size: clamp(12px, 2.4vw, 14px);
+            color: #c7ffe9;
+            margin: 0
+        }
+
+        .term {
+            border: 1px solid rgba(0, 255, 153, .35);
+            background: rgba(0, 0, 0, .55);
+            border-radius: 8px;
+            padding: 8px;
+            font-size: clamp(12px, 2.4vw, 14px);
+            min-height: 42px
+        }
+
+        .term label {
+            color: #a8ffdd;
+            margin-right: 6px
+        }
+
+        .attempt {
+            font-weight: 700;
+            color: #bdfbe6
+        }
+
+        .progress {
+            height: 10px;
+            border: 1px solid rgba(0, 255, 153, .35);
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, .35)
+        }
+
+        .fillp {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            box-shadow: 0 0 10px var(--accent)
+        }
+
+        .rowstats {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: clamp(11px, 2.2vw, 13px);
+            color: #c7ffe9
+        }
+
+        .rowstats span strong {
+            color: #fff
+        }
+
+        .target {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .small {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap
+        }
+
+        /* Leaderboard & Generator */
+        .lead {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px
+        }
+
+        @media (max-width:860px) {
+            .lead {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .table {
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 10px;
+            overflow: hidden
+        }
+
+        .table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(11px, 2.2vw, 13px)
+        }
+
+        .table th,
+        .table td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, .12)
+        }
+
+        .table th {
+            background: rgba(0, 255, 153, .08)
+        }
+
+        .center {
+            text-align: center
+        }
+
+        /* Access Granted animation */
+        #grant {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            background: rgba(0, 0, 0, .5);
+            backdrop-filter: blur(2px)
+        }
+
+        #grant .msg {
+            font-family: "Orbitron", sans-serif;
+            font-size: clamp(28px, 6vw, 56px);
+            color: #00ffb0;
+            text-shadow: 0 0 18px rgba(0, 255, 153, .9);
+            animation: pulse 1.2s ease-in-out infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: .9
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 1
+            }
+        }
+
+        /* Footer */
+        .footer {
+            margin: 24px 0;
+            border-top: 1px dashed rgba(0, 255, 153, .3);
+            padding-top: 12px;
+            color: #bdeed9;
+            text-align: center;
+            font-size: clamp(11px, 2.2vw, 13px)
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="bgA" aria-hidden="true"></canvas>
+    <canvas id="bgB" aria-hidden="true"></canvas>
+    <div class="bg-overlay" aria-hidden="true"></div>
+
+    <div class="app">
+        <header class="header">
+            <h1>🔐 Password Cracking Live Demo</h1>
+            <div class="subtitle">Responsive Seminar Edition — Works on phones, tablets, and desktops</div>
+            <div class="ethical">⚠️ Educational use only. Unauthorized access is illegal.</div>
+        </header>
+
+        <!-- Password Strength Checker -->
+        <section class="panel">
+            <h2>🔎 Password Strength Checker</h2>
+            <div class="row">
+                <div class="input">
+                    <input id="pwInput" type="password" placeholder="Type a sample password (e.g., A7$k!Z9x)" />
+                    <span id="pwToggle" class="toggle" title="Show/Hide">👁</span>
+                </div>
+                <button id="useInDemos" class="btn ghost">Use in demos</button>
+                <button id="randPW" class="btn">Generate strong</button>
+            </div>
+            <div class="meter">
+                <div class="bar">
+                    <div id="pwFill" class="fill" style="width:0%"></div>
+                </div>
+                <div class="readout"><span id="pwScore">Score: 0/100 — Very Weak</span><span id="pwTime">Est. crack
+                        time: —</span></div>
+                <div id="pwTips" class="tips">Tip: Use 12–16+ chars with upper/lowercase, numbers & symbols. Enable MFA.
+                </div>
+            </div>
+        </section>
+
+        <!-- Control Center -->
+        <section class="panel">
+            <h2>🎛️ Control Center</h2>
+            <div class="speedRow">
+                <div class="left">
+                    <button class="btn" id="startAll">Start All</button>
+                    <button class="btn secondary" id="pauseAll">Pause All</button>
+                    <button class="btn danger" id="stopAll">Stop All</button>
+                    <button class="btn" id="resetAll">Reset</button>
+                </div>
+                <div class="right">
+                    <label for="speed">Demo speed</label>
+                    <input type="range" id="speed" min="1" max="5" value="3" />
+                    <label for="rig">Rig</label>
+                    <select id="rig">
+                        <option value="cpu">CPU (Laptop)</option>
+                        <option value="gpu">GPU (Workstation)</option>
+                        <option value="cluster">GPU Cluster</option>
+                    </select>
+                    <label for="autoDemo">Auto demo</label>
+                    <input type="checkbox" id="autoDemo" />
+                </div>
+            </div>
+            <div class="grid4" style="margin-top:10px">
+                <div class="badge">
+                    <div class="k">Total Attempts <span class="v" id="gAttempts">0</span></div>
+                </div>
+                <div class="badge">
+                    <div class="k">Attempts / Sec <span class="v" id="gAPS">0</span></div>
+                </div>
+                <div class="badge">
+                    <div class="k">Successful Cracks <span class="v" id="gCracks">0</span></div>
+                </div>
+                <div class="badge">
+                    <div class="k">Active Attacks <span class="v" id="gActive">0</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scenarios -->
+        <h3 class="section-title">Attack Scenarios</h3>
+        <section class="cards" id="cards">
+            <!-- 1 Weak -->
+            <article class="card" data-demo="weak">
+                <div class="head">
+                    <h3>🎯 Weak Password (3 chars)</h3><span class="status ready" data-status>Ready</span>
+                </div>
+                <div class="body">
+                    <p class="p">Brute-force 3 chars over <i>a–z</i> + digits.</p>
+                    <div class="term"><label>Current:</label><span class="attempt" data-attempt>---</span></div>
+                    <div class="progress">
+                        <div class="fillp" data-fill></div>
+                    </div>
+                    <div class="rowstats"><span>Attempts: <strong data-attempts>0</strong></span><span>Time: <strong
+                                data-time>00:00</strong></span><span>Speed: <strong data-speed>0/s</strong></span></div>
+                    <div class="target"><label>Target:</label><select data-target>
+                            <option>abc</option>
+                            <option>xyz</option>
+                            <option>123</option>
+                            <option>000</option>
+                        </select></div>
+                    <div class="small"><button class="btn" data-action="start">Start</button><button
+                            class="btn secondary" data-action="pause">Pause</button><button class="btn danger"
+                            data-action="stop">Stop</button></div>
+                </div>
+            </article>
+            <!-- 2 Dictionary -->
+            <article class="card" data-demo="dict">
+                <div class="head">
+                    <h3>📚 Dictionary Attack</h3><span class="status ready" data-status>Ready</span>
+                </div>
+                <div class="body">
+                    <p class="p">Common words + simple variants (e.g., <i>password</i>, <i>qwerty1!</i>).</p>
+                    <div class="term"><label>Current:</label><span class="attempt" data-attempt>---</span></div>
+                    <div class="progress">
+                        <div class="fillp" data-fill></div>
+                    </div>
+                    <div class="rowstats"><span>Attempts: <strong data-attempts>0</strong></span><span>Time: <strong
+                                data-time>00:00</strong></span><span>Speed: <strong data-speed>0/s</strong></span></div>
+                    <div class="target"><label>Target:</label><input type="text" data-target value="qwerty1" /></div>
+                    <div class="small"><button class="btn" data-action="start">Start</button><button
+                            class="btn secondary" data-action="pause">Pause</button><button class="btn danger"
+                            data-action="stop">Stop</button></div>
+                </div>
+            </article>
+            <!-- 3 PIN -->
+            <article class="card" data-demo="pin">
+                <div class="head">
+                    <h3>🔢 4‑Digit PIN</h3><span class="status ready" data-status>Ready</span>
+                </div>
+                <div class="body">
+                    <p class="p">Enumerates 0000 → 9999 (no lockout in sim).</p>
+                    <div class="term"><label>Current:</label><span class="attempt" data-attempt>---</span></div>
+                    <div class="progress">
+                        <div class="fillp" data-fill></div>
+                    </div>
+                    <div class="rowstats"><span>Attempts: <strong data-attempts>0</strong></span><span>Time: <strong
+                                data-time>00:00</strong></span><span>Speed: <strong data-speed>0/s</strong></span></div>
+                    <div class="target"><label>Target PIN:</label><input type="number" data-target value="0420" min="0"
+                            max="9999" /></div>
+                    <div class="small"><button class="btn" data-action="start">Start</button><button
+                            class="btn secondary" data-action="pause">Pause</button><button class="btn danger"
+                            data-action="stop">Stop</button></div>
+                </div>
+            </article>
+            <!-- 4 Mixed -->
+            <article class="card" data-demo="mixed">
+                <div class="head">
+                    <h3>🧪 Mixed Charset (len 5)</h3><span class="status ready" data-status>Ready</span>
+                </div>
+                <div class="body">
+                    <p class="p">a–z, A–Z, 0–9 (length 5). Shows keyspace growth.</p>
+                    <div class="term"><label>Current:</label><span class="attempt" data-attempt>---</span></div>
+                    <div class="progress">
+                        <div class="fillp" data-fill></div>
+                    </div>
+                    <div class="rowstats"><span>Attempts: <strong data-attempts>0</strong></span><span>Time: <strong
+                                data-time>00:00</strong></span><span>Speed: <strong data-speed>0/s</strong></span></div>
+                    <div class="target"><label>Target:</label><input type="text" data-target value="Ab1cD" /></div>
+                    <div class="small"><button class="btn" data-action="start">Start</button><button
+                            class="btn secondary" data-action="pause">Pause</button><button class="btn danger"
+                            data-action="stop">Stop</button></div>
+                </div>
+            </article>
+            <!-- 5 Rainbow -->
+            <article class="card" data-demo="rainbow">
+                <div class="head">
+                    <h3>🌈 Rainbow Table (Sim)</h3><span class="status ready" data-status>Ready</span>
+                </div>
+                <div class="body">
+                    <p class="p">Simulated precomputed lookup (instant if present; else dictionary fallback).</p>
+                    <div class="term"><label>Current:</label><span class="attempt" data-attempt>---</span></div>
+                    <div class="progress">
+                        <div class="fillp" data-fill></div>
+                    </div>
+                    <div class="rowstats"><span>Attempts: <strong data-attempts>0</strong></span><span>Time: <strong
+                                data-time>00:00</strong></span><span>Speed: <strong data-speed>0/s</strong></span></div>
+                    <div class="target"><label>Target:</label><input type="text" data-target value="letmein" /></div>
+                    <div class="small"><button class="btn" data-action="start">Start</button><button
+                            class="btn secondary" data-action="pause">Pause</button><button class="btn danger"
+                            data-action="stop">Stop</button></div>
+                </div>
+            </article>
+            <!-- 6 Strong -->
+            <article class="card" data-demo="strong">
+                <div class="head">
+                    <h3>🛡️ Strong (len 6 + symbols)</h3><span class="status ready" data-status>Ready</span>
+                </div>
+                <div class="body">
+                    <p class="p">Full charset (a–z, A–Z, 0–9, symbols). Deliberately throttled.</p>
+                    <div class="term"><label>Current:</label><span class="attempt" data-attempt>---</span></div>
+                    <div class="progress">
+                        <div class="fillp" data-fill></div>
+                    </div>
+                    <div class="rowstats"><span>Attempts: <strong data-attempts>0</strong></span><span>Time: <strong
+                                data-time>00:00</strong></span><span>Speed: <strong data-speed>0/s</strong></span></div>
+                    <div class="target"><label>Target:</label><input type="text" data-target value="A7$k!Z" /></div>
+                    <div class="small"><button class="btn" data-action="start">Start</button><button
+                            class="btn secondary" data-action="pause">Pause</button><button class="btn danger"
+                            data-action="stop">Stop</button></div>
+                </div>
+            </article>
+        </section>
+
+        <!-- Leaderboard & Generator -->
+        <section class="panel">
+            <h2>🏆 Leaderboard & Tools</h2>
+            <div class="lead">
+                <div class="table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Password (masked)</th>
+                                <th class="center">Score</th>
+                                <th class="center">Est. Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderRows"></tbody>
+                    </table>
+                </div>
+                <div>
+                    <p style="margin-top:0">Use the generator to create demo passwords quickly.</p>
+                    <div class="row" style="align-items:flex-start">
+                        <button class="btn" id="gen12">Generate 12-char</button>
+                        <button class="btn" id="gen16">Generate 16-char</button>
+                        <button class="btn ghost" id="copyPW">Copy last</button>
+                    </div>
+                    <p style="opacity:.8;margin-top:10px">Pro tip: Use <b>Rig</b> selector (CPU/GPU/Cluster) to
+                        dramatize speed changes during your talk.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Education -->
+        <section class="panel">
+            <h2>🎓 Educational Notes</h2>
+            <ul>
+                <li>Brute force explores the full keyspace; time grows exponentially with length.</li>
+                <li>Dictionary and rainbow attacks exploit human choices & precomputation.</li>
+                <li>Use a password manager, avoid reuse, and enable multi-factor authentication (MFA).</li>
+            </ul>
+        </section>
+
+        <div class="footer">© 2025 Educational Cybersecurity Training Tool • Use responsibly for defense and awareness
+            only.</div>
+    </div>
+
+    <!-- Access Granted Overlay -->
+    <div id="grant">
+        <div class="msg">ACCESS GRANTED</div>
+    </div>
+
+    <script>
+        /* ========= BACKGROUND (two-layer Matrix for depth) ========= */
+        (function matrix() {
+            const A = document.getElementById('bgA'), B = document.getElementById('bgB');
+            const ctxA = A.getContext('2d'), ctxB = B.getContext('2d');
+            let W = innerWidth, H = innerHeight; A.width = B.width = W; A.height = B.height = H;
+            const letters = 'アァ力カサ夕ナハマヤャラワン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const dropsA = new Array(Math.floor(W / 14)).fill(1);
+            const dropsB = new Array(Math.floor(W / 10)).fill(1);
+            function resize() {
+                W = innerWidth; H = innerHeight; A.width = B.width = W; A.height = B.height = H;
+            }
+            addEventListener('resize', resize, { passive: true });
+            function draw(ctx, drops, font, color, speed) {
+                ctx.fillStyle = 'rgba(0,0,0,' + (speed === 1 ? 0.08 : 0.05) + ')'; ctx.fillRect(0, 0, W, H);
+                ctx.font = font + 'px "Share Tech Mono", monospace';
+                for (let i = 0; i < drops.length; i++) {
+                    const txt = letters[Math.floor(Math.random() * letters.length)];
+                    const x = i * font; const y = drops[i] * font;
+                    ctx.fillStyle = color; ctx.fillText(txt, x, y);
+                    if (y > H && Math.random() > 0.975) drops[i] = 0; drops[i] += speed;
+                }
+            }
+            (function loop() {
+                draw(ctxA, dropsA, 14, 'rgba(0,255,153,0.75)', 1);
+                draw(ctxB, dropsB, 18, 'rgba(0,204,255,0.55)', 1.3);
+                requestAnimationFrame(loop);
+            })();
+        })();
+
+        /* ========= Utility ========= */
+        const $ = s => document.querySelector(s);
+        const $$ = s => Array.from(document.querySelectorAll(s));
+
+        /* WebAudio tiny beeps (no external files) */
+        let audioCtx; function beep(freq = 880, dur = 0.08, type = 'square', vol = 0.02) {
+            try {
+                audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.type = type; o.frequency.value = freq; g.gain.value = vol;
+                o.connect(g); g.connect(audioCtx.destination); o.start();
+                setTimeout(() => { o.stop(); }, dur * 1000);
+            } catch (e) {/* ignore */ }
+        }
+
+        /* ========= Strength Checker ========= */
+        const pwInput = $('#pwInput'), pwToggle = $('#pwToggle'), pwFill = $('#pwFill'),
+            pwScore = $('#pwScore'), pwTime = $('#pwTime'), pwTips = $('#pwTips');
+
+        pwToggle.addEventListener('click', () => { pwInput.type = (pwInput.type === 'password' ? 'text' : 'password'); pwInput.focus(); });
+
+        const CHARS = {
+            lower: 'abcdefghijklmnopqrstuvwxyz',
+            upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            digits: '0123456789',
+            symbols: '!@#$%^&*()-_=+[]{};:,.?/~'
+        };
+
+        function strengthScore(pw) {
+            const len = pw.length;
+            let classes = 0;
+            if (/[a-z]/.test(pw)) classes++;
+            if (/[A-Z]/.test(pw)) classes++;
+            if (/[0-9]/.test(pw)) classes++;
+            if (/[^A-Za-z0-9]/.test(pw)) classes++;
+            let score = Math.min(60, len * 4) + (classes - 1) * 12;
+            if (/(.)\1\1/.test(pw)) score -= 8;
+            if (/^(?:123|abc|qwe|pass|letmein)/i.test(pw)) score -= 10;
+            score = Math.max(0, Math.min(100, score));
+            return { score, classes, len };
+        }
+        function humanTime(sec) {
+            if (!isFinite(sec) || sec <= 0) return "< 1s";
+            const u = [["yr", 31557600], ["mo", 2629800], ["d", 86400], ["h", 3600], ["m", 60], ["s", 1]];
+            let s = sec; const out = [];
+            for (const [U, V] of u) { const q = Math.floor(s / V); if (q > 0) { out.push(q + U); s -= q * V; if (out.length >= 2) break; } }
+            return out.join(" ");
+        }
+        function estimateCrackTime(pw, rig = 'cpu') {
+            const { len, classes } = strengthScore(pw);
+            const pools = [26, 52, 62, 62 + 32];
+            const base = pools[Math.max(0, Math.min(3, classes - 1))] || 10;
+            const keyspace = Math.pow(base, Math.max(1, len));
+            const rigSpeed = rig === 'cluster' ? 5e10 : rig === 'gpu' ? 2e9 : 5e7; // guesses/sec
+            const seconds = keyspace / rigSpeed;
+            return humanTime(seconds);
+        }
+        function explain(score) {
+            if (score < 25) return "Very Weak — add length & variety.";
+            if (score < 50) return "Weak — add length, mix UPPER/lower, numbers, symbols.";
+            if (score < 75) return "Medium — consider 12–16+ chars & symbols.";
+            if (score < 90) return "Strong — avoid reuse, enable MFA.";
+            return "Very Strong — great. Use a manager.";
+        }
+        function updateStrength() {
+            const pw = pwInput.value || "";
+            const { score } = strengthScore(pw);
+            const rig = $('#rig').value;
+            pwFill.style.width = score + "%";
+            pwScore.textContent = `Score: ${score}/100 — ${explain(score)}`;
+            pwTime.textContent = pw.length ? `Est. crack time (${rig.toUpperCase()}): ${estimateCrackTime(pw, rig)}` : "Est. crack time: —";
+            pwTips.textContent = pw.length
+                ? (/^(password|qwerty|letmein|123)/i.test(pw) ? "⚠️ Common/guessable pattern — change it." : "Good: keep length & variety high, and enable MFA.")
+                : "Tip: Use 12–16+ chars with upper/lowercase, numbers & symbols. Enable MFA.";
+        }
+        pwInput.addEventListener('input', updateStrength);
+        $('#rig').addEventListener('change', updateStrength);
+
+        /* Random generator */
+        function genStrong(n = 12) {
+            const pool = CHARS.lower + CHARS.upper + CHARS.digits + CHARS.symbols;
+            let s = ''; for (let i = 0; i < n; i++) { s += pool[Math.floor(Math.random() * pool.length)]; }
+            return s;
+        }
+        $('#randPW').addEventListener('click', () => { pwInput.value = genStrong(14); updateStrength(); beep(1320, 0.05, 'sawtooth', 0.03); });
+        $('#gen12').addEventListener('click', () => { pwInput.value = genStrong(12); updateStrength(); });
+        $('#gen16').addEventListener('click', () => { pwInput.value = genStrong(16); updateStrength(); });
+        $('#copyPW').addEventListener('click', async () => {
+            const val = pwInput.value || ''; if (!val) return;
+            try { await navigator.clipboard.writeText(val); pwTips.textContent = "Copied to clipboard."; beep(1760, 0.07, 'triangle', 0.03); } catch (e) { }
+        });
+
+        /* Leaderboard */
+        const leaderRows = $('#leaderRows');
+        const board = [];
+        function pushBoard(pw) {
+            if (!pw) return;
+            const { score } = strengthScore(pw);
+            const time = estimateCrackTime(pw, $('#rig').value);
+            board.push({ pw, score, time });
+            board.sort((a, b) => b.score - a.score);
+            if (board.length > 10) board.length = 10;
+            renderBoard();
+        }
+        function mask(p) { if (p.length <= 4) return '•'.repeat(p.length); return p.slice(0, 2) + '•'.repeat(Math.max(0, p.length - 4)) + p.slice(-2); }
+        function renderBoard() {
+            leaderRows.innerHTML = board.map((r, i) => `<tr><td>${i + 1}</td><td>${mask(r.pw)}</td><td class="center">${r.score}</td><td class="center">${r.time}</td></tr>`).join('');
+        }
+
+        /* ========= Demo Engine ========= */
+        const globalStats = { attempts: 0, cracks: 0, active: 0, aps: 0, tickAttempts: 0, lastTick: performance.now() };
+        const gAttempts = $('#gAttempts'), gCracks = $('#gCracks'), gActive = $('#gActive'), gAPS = $('#gAPS');
+        function tickAttempts() { gAttempts.textContent = globalStats.attempts.toLocaleString(); }
+        function tickCracks() { gCracks.textContent = globalStats.cracks.toLocaleString(); }
+        function tickActive() { gActive.textContent = globalStats.active.toLocaleString(); }
+        (function apsLoop() {
+            const now = performance.now(); const dt = (now - globalStats.lastTick) / 1000;
+            const aps = Math.round(globalStats.tickAttempts / Math.max(.001, dt));
+            globalStats.aps = aps; gAPS.textContent = aps.toLocaleString();
+            globalStats.tickAttempts = 0; globalStats.lastTick = now;
+            setTimeout(apsLoop, 450);
+        })();
+
+        const SPEED_MS = { 1: 280, 2: 180, 3: 110, 4: 60, 5: 28 }; // base interval (lower is faster)
+        function rigFactor() {
+            const r = $('#rig').value;
+            return r === 'cluster' ? 0.25 : r === 'gpu' ? 0.55 : 1.0; // smaller => faster
+        }
+
+        function* product(charset, length) {
+            const n = charset.length; const idx = new Array(length).fill(0);
+            while (true) {
+                yield idx.map(i => charset[i]).join('');
+                let k = length - 1; while (k >= 0) { idx[k]++; if (idx[k] < n) break; idx[k] = 0; k--; }
+                if (k < 0) return;
+            }
+        }
+        const sets = {
+            weak: CHARS.lower + CHARS.digits,
+            mixed: CHARS.lower + CHARS.upper + CHARS.digits,
+            strong: CHARS.lower + CHARS.upper + CHARS.digits + CHARS.symbols
+        };
+        const DICT = [
+            'password', 'admin', 'letmein', 'qwerty', 'welcome', 'monkey', 'dragon', 'iloveyou', 'sunshine',
+            'secret', 'passw0rd', 'qwerty123', 'football', 'princess', 'abc123', 'login', 'trustno1', 'qazwsx',
+            'baseball', 'starwars', '123456', '12345678', '123456789', 'qwerty1', 'qwerty!', 'letmein1', 'letmein!'
+        ];
+        const RAINBOW = new Map([
+            ['password', 'password'], ['letmein', 'letmein'], ['qwerty', 'qwerty'], ['dragon', 'dragon'],
+            ['abc123', 'abc123'], ['123456', '123456'], ['monkey', 'monkey'], ['admin', 'admin']
+        ]);
+
+        /* Access Granted */
+        const grant = $('#grant');
+        function showGrant() { grant.style.display = 'flex'; beep(1320, 0.08); beep(1760, 0.1); setTimeout(() => grant.style.display = 'none', 1000); }
+
+        class BruteDemo {
+            constructor(root, { batch = 250, slow = 1, init, tick }) {
+                this.root = root;
+                this.$s = root.querySelector('[data-status]'); this.$a = root.querySelector('[data-attempt]');
+                this.$n = root.querySelector('[data-attempts]'); this.$t = root.querySelector('[data-time]');
+                this.$spd = root.querySelector('[data-speed]'); this.$f = root.querySelector('[data-fill]');
+                this.$target = root.querySelector('[data-target]');
+                this.batch = batch; this.slow = slow; this.initFn = init; this.tickFn = tick;
+                this.state = 'ready'; this.timer = null; this.startedAt = 0; this.elapsed = 0; this.attempts = 0; this.found = false;
+                root.querySelectorAll('[data-action]').forEach(btn => btn.addEventListener('click', e => {
+                    const a = e.currentTarget.getAttribute('data-action');
+                    if (a === 'start') this.start(); else if (a === 'pause') this.pause(); else if (a === 'stop') this.stop();
+                }));
+                this.$target.addEventListener('input', () => { if (this.state !== 'running') this.reset(); });
+                this.reset();
+            }
+            reset() {
+                this.stop(); this.state = 'ready'; this._status();
+                this.attempts = 0; this.found = false; this.elapsed = 0;
+                this.$a.textContent = '---'; this.$n.textContent = '0'; this.$t.textContent = '00:00'; this.$spd.textContent = '0/s'; this.$f.style.width = '0%';
+                this.initFn && this.initFn(this);
+            }
+            _status() { this.$s.className = 'status ' + this.state; this.$s.textContent = this.state[0].toUpperCase() + this.state.slice(1); }
+            start() {
+                if (this.state === 'running') return;
+                if (this.state === 'ready' || this.state === 'stopped') this.startedAt = performance.now();
+                this.state = 'running'; this._status(); globalStats.active++; tickActive(); this.loop(); beep(880, 0.06, 'square', 0.02);
+            }
+            pause() {
+                if (this.state !== 'running') return;
+                this.state = 'paused'; this._status(); clearTimeout(this.timer); this.timer = null; globalStats.active = Math.max(0, globalStats.active - 1); tickActive(); beep(440, 0.05);
+            }
+            stop() {
+                if (this.timer) clearTimeout(this.timer); this.timer = null;
+                if (this.state === 'running') { globalStats.active = Math.max(0, globalStats.active - 1); tickActive(); }
+                this.state = 'stopped'; this._status();
+            }
+            done() {
+                if (this.timer) clearTimeout(this.timer);
+                this.timer = null; this.state = 'stopped'; this._status(); this.$f.style.width = '100%';
+                globalStats.cracks++; tickCracks(); if (globalStats.active > 0) { globalStats.active--; tickActive(); }
+                showGrant();
+            }
+            fmt(ms) { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+            loop() {
+                if (this.state !== 'running') return;
+                const batch = this.batch; const now = performance.now(); this.elapsed = now - this.startedAt;
+                const res = this.tickFn(this, batch);
+                this.$a.textContent = res.last || this.$a.textContent;
+                this.$n.textContent = this.attempts.toLocaleString();
+                this.$t.textContent = this.fmt(this.elapsed);
+                const dt = Math.max(1, (now - globalStats.lastTick) / 1000);
+                const aps = Math.round((res.tried || batch) / dt);
+                this.$spd.textContent = aps.toLocaleString() + '/s'; this.$f.style.width = (res.progress * 100).toFixed(2) + '%';
+                globalStats.attempts += (res.tried || batch); globalStats.tickAttempts += (res.tried || batch); tickAttempts();
+                if (res.found) { this.done(); return; }
+                const base = SPEED_MS[$('#speed').value]; const interval = base * this.slow * rigFactor();
+                this.timer = setTimeout(() => this.loop(), interval);
+            }
+        }
+
+        /* Build demos */
+        const demos = [];
+        // Weak (3 chars, lower+digits)
+        demos.push({
+            key: 'weak', make(el) {
+                const charset = sets.weak; const L = 3; const total = Math.pow(charset.length, L);
+                let gen;
+                return new BruteDemo(el, {
+                    batch: 800, slow: 0.9,
+                    init(self) { gen = product(charset, L); self.attempts = 0; self.found = false; },
+                    tick(self, batch) {
+                        let last = '', tried = 0, t = el.$target.value.trim();
+                        for (let i = 0; i < batch; i++) {
+                            const { value, done } = gen.next(); if (done) return { progress: 1, tried, found: false, last };
+                            last = value; self.attempts++; tried++; if (value === t) return { progress: 1, tried, found: true, last: value };
+                        }
+                        return { progress: Math.min(1, self.attempts / total), tried, found: false, last };
+                    }
+                });
+            }
+        });
+        // Dictionary
+        demos.push({
+            key: 'dict', make(el) {
+                const variants = w => [w, w + '1', w + '!', w + '123', w[0].toUpperCase() + w.slice(1), w.replace(/a/g, '@').replace(/o/g, '0')];
+                let list = [], idx = 0;
+                return new BruteDemo(el, {
+                    batch: 500, slow: 1.1,
+                    init(self) { list = []; DICT.forEach(w => list.push(...variants(w))); idx = 0; self.attempts = 0; self.found = false; },
+                    tick(self, batch) {
+                        let last = '', tried = 0, t = (el.$target.value || '').trim();
+                        if (t && /^password|^qwerty|^letmein|^admin|^123/i.test(t)) { /* common warning */ pwTips.textContent = "⚠️ Target resembles a common password."; }
+                        for (let i = 0; i < batch; i++) {
+                            if (idx >= list.length) return { progress: 1, tried, found: false, last };
+                            const guess = list[idx++]; last = guess; self.attempts++; tried++; if (guess === t) return { progress: 1, tried, found: true, last: guess };
+                        }
+                        return { progress: idx / list.length, tried, found: false, last };
+                    }
+                });
+            }
+        });
+        // PIN
+        demos.push({
+            key: 'pin', make(el) {
+                let n = 0, total = 10000;
+                return new BruteDemo(el, {
+                    batch: 2200, slow: 0.7,
+                    init(self) { n = 0; self.attempts = 0; self.found = false; },
+                    tick(self, batch) {
+                        let last = '', tried = 0, t = String(el.$target.value).padStart(4, '0');
+                        for (let i = 0; i < batch; i++) {
+                            if (n >= 10000) return { progress: 1, tried, found: false, last };
+                            const guess = String(n++).padStart(4, '0'); last = guess; self.attempts++; tried++; if (guess === t) return { progress: 1, tried, found: true, last: guess };
+                        }
+                        return { progress: n / total, tried, found: false, last };
+                    }
+                });
+            }
+        });
+        // Mixed len5
+        demos.push({
+            key: 'mixed', make(el) {
+                const charset = sets.mixed; const L = 5; const total = Math.pow(charset.length, L);
+                let gen;
+                return new BruteDemo(el, {
+                    batch: 520, slow: 1.4,
+                    init(self) { gen = product(charset, L); self.attempts = 0; self.found = false; },
+                    tick(self, batch) {
+                        let last = '', tried = 0, t = (el.$target.value || '').slice(0, L);
+                        for (let i = 0; i < batch; i++) {
+                            const { value, done } = gen.next(); if (done) return { progress: 1, tried, found: false, last };
+                            last = value; self.attempts++; tried++; if (value === t) return { progress: 1, tried, found: true, last: value };
+                        }
+                        return { progress: Math.min(1, self.attempts / total), tried, found: false, last };
+                    }
+                });
+            }
+        });
+        // Rainbow
+        demos.push({
+            key: 'rainbow', make(el) {
+                let idx = 0, list = [];
+                return new BruteDemo(el, {
+                    batch: 420, slow: 1.2,
+                    init(self) { self.attempts = 0; self.found = false; list = DICT; idx = 0; },
+                    tick(self, batch) {
+                        const t = (el.$target.value || '').trim();
+                        if (RAINBOW.has(t)) { self.attempts++; return { progress: 1, tried: 1, found: true, last: t }; }
+                        let last = '', tried = 0;
+                        for (let i = 0; i < batch; i++) {
+                            if (idx >= list.length) return { progress: 1, tried, found: false, last };
+                            const guess = list[idx++]; last = guess; self.attempts++; tried++; if (guess === t) return { progress: 1, tried, found: true, last: guess };
+                        }
+                        return { progress: idx / list.length, tried, found: false, last };
+                    }
+                });
+            }
+        });
+        // Strong len6 + symbols
+        demos.push({
+            key: 'strong', make(el) {
+                const charset = sets.strong; const L = 6; const total = Math.pow(charset.length, L);
+                let gen;
+                return new BruteDemo(el, {
+                    batch: 260, slow: 2.4,
+                    init(self) { gen = product(charset, L); self.attempts = 0; self.found = false; },
+                    tick(self, batch) {
+                        let last = '', tried = 0, t = (el.$target.value || '').slice(0, L);
+                        for (let i = 0; i < batch; i++) {
+                            const { value, done } = gen.next(); if (done) return { progress: 1, tried, found: false, last };
+                            last = value; self.attempts++; tried++; if (value === t) return { progress: 1, tried, found: true, last: value };
+                        }
+                        return { progress: Math.min(1, self.attempts / total), tried, found: false, last };
+                    }
+                });
+            }
+        });
+
+        /* Instantiate */
+        const instances = [];
+        (function initCards() {
+            $$('#cards .card').forEach(card => {
+                const key = card.getAttribute('data-demo');
+                const cfg = demos.find(d => d.key === key); if (!cfg) return;
+                // attach refs used in class
+                card.$status = card.querySelector('[data-status]');
+                card.$attempt = card.querySelector('[data-attempt]');
+                card.$attempts = card.querySelector('[data-attempts]');
+                card.$time = card.querySelector('[data-time]');
+                card.$speed = card.querySelector('[data-speed]');
+                card.$fill = card.querySelector('[data-fill]');
+                card.$target = card.querySelector('[data-target]');
+                const inst = cfg.make(card);
+                instances.push(inst);
+            });
+        })();
+
+        /* Global controls */
+        $('#startAll').addEventListener('click', () => instances.forEach(i => i.start()));
+        $('#pauseAll').addEventListener('click', () => instances.forEach(i => i.pause()));
+        $('#stopAll').addEventListener('click', () => instances.forEach(i => i.stop()));
+        $('#resetAll').addEventListener('click', () => instances.forEach(i => i.reset()));
+        $('#speed').addEventListener('input', () => {/* picked up by loop */ });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === ' ') { e.preventDefault(); instances.forEach(i => i.state === 'running' ? i.pause() : i.start()); }
+            if (e.key.toLowerCase() === 'r') { instances.forEach(i => i.reset()); }
+            if (e.key.toLowerCase() === 's') { instances.forEach(i => i.stop()); }
+        });
+
+        /* Use in demos: propagate password into targets */
+        $('#useInDemos').addEventListener('click', () => {
+            const pw = pwInput.value || "";
+            const weakTarget = (pw.replace(/[^a-zA-Z0-9]/g, '') || 'abc').slice(0, 3).padEnd(3, 'a');
+            document.querySelector('[data-demo="weak"] [data-target]').value = weakTarget;
+            document.querySelector('[data-demo="dict"] [data-target]').value = pw || 'password';
+            const digits = (pw.match(/\d/g) || []).join('').slice(0, 4);
+            document.querySelector('[data-demo="pin"] [data-target]').value = digits ? Number(digits) : 420;
+            document.querySelector('[data-demo="mixed"] [data-target]').value = (pw || 'Ab1cD').slice(0, 5).padEnd(5, 'X');
+            document.querySelector('[data-demo="rainbow"] [data-target]').value = pw || 'letmein';
+            document.querySelector('[data-demo="strong"] [data-target]').value = (pw || 'A7$k!Z').slice(0, 6).padEnd(6, '!');
+            instances.forEach(i => i.reset());
+            pushBoard(pw);
+            beep(1200, 0.05, 'sawtooth', 0.03);
+        });
+
+        /* Auto Demo Mode */
+        const autoBox = $('#autoDemo');
+        let autoTimer = null;
+        function autoStep() {
+            const list = [
+                () => { document.querySelector('[data-demo="weak"] [data-target]').value = 'abc'; },
+                () => { document.querySelector('[data-demo="dict"] [data-target]').value = 'password'; },
+                () => { document.querySelector('[data-demo="pin"] [data-target]').value = 420; },
+                () => { document.querySelector('[data-demo="mixed"] [data-target]').value = 'Ab1cD'; },
+                () => { document.querySelector('[data-demo="rainbow"] [data-target]').value = 'letmein'; },
+                () => { document.querySelector('[data-demo="strong"] [data-target]').value = 'A7$k!Z'; }
+            ];
+            const pick = list[Math.floor(Math.random() * list.length)]; pick();
+            instances.forEach(i => i.reset());
+            setTimeout(() => instances.forEach(i => i.start()), 200);
+        }
+        autoBox.addEventListener('change', () => {
+            if (autoBox.checked) {
+                autoStep();
+                autoTimer = setInterval(autoStep, 8000);
+            } else {
+                clearInterval(autoTimer); autoTimer = null;
+            }
+        });
+
+        /* Initialize meter */
+        updateStrength();
+    </script>
+</body>
+
+</html>
